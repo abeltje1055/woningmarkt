@@ -25,10 +25,27 @@
 }
 
 .arc text {
-  font: 10px sans-serif;
+  font: 12px sans-serif;
   text-anchor: middle;
+
 }
 
 .arc path {
   stroke: #fff;
+}
+
+div #map {
+  height: 700px;
+  width: 65%;
+  float: left;
+}
+
+div #pie {
+  height: 500px;
+  width: 35%;
+  float: right;
+}
+
+#svgPie {
+  position: absolute;
 }
