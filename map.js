@@ -65,7 +65,7 @@ window.onload = function() {
             pieTitle.append('text')
                .attr('id', 'pieTitle')
                .text(function(d) {return value.properties.Stadsdeel})
-               .attr('x', 180)
+               .attr('x', 220)
                .attr('y', 50)
 
         })
@@ -245,7 +245,7 @@ window.onload = function() {
       pieTitle.append('text')
          .attr('id', 'pieTitle')
          .text('Amsterdam')
-         .attr('x', 180)
+         .attr('x', 220)
          .attr('y', 50)
 
 
