@@ -4,6 +4,10 @@
   stroke-width: 0.6;
 }
 
+blockquote {
+  margin-top: 50px;
+}
+
 #tip {
   position: absolute;
   background: #fff;
@@ -25,8 +29,9 @@
 }
 
 .arc text {
-  font: 12px sans-serif;
+  font: 14px sans-serif;
   text-anchor: middle;
+  font-weight: bold;
 
 }
 
@@ -34,18 +39,35 @@
   stroke: #fff;
 }
 
+.legendSvp {
+  position: absolute;
+  top: 550px;
+  right: 50px;
+
+}
 div #map {
-  height: 700px;
+  height: 600px;
   width: 65%;
   float: left;
 }
 
+#pieTitle {
+  text-anchor: middle;
+}
+
 div #pie {
-  height: 500px;
+  height: 600px;
   width: 35%;
   float: right;
 }
 
 #svgPie {
   position: absolute;
+  top: 200px;
+  right: 100px;
+}
+
+.container-fluid {
+  padding: 0px;
+  margin-left: 0px;
 }

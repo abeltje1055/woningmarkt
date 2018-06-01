@@ -7,8 +7,9 @@ window.onload = function() {
 
 
   var margin = { top: 10, right: 10, bottom: 10, left: 10 }
-  var h = 700 - margin.top - margin.bottom
+  var h = 600 - margin.top - margin.bottom
   var w = 800 - margin.left - margin.right
+  format = d3.format(',.1%')
 
 
   var color = d3.scaleOrdinal(d3.schemeCategory10);
@@ -18,6 +19,62 @@ window.onload = function() {
     if (error) throw error;
 
       console.log(data);
+
+      function change(value) {
+
+        var pie = d3.pie()
+          .sort(null)
+          .value(function(d) {return d[value.properties.Stadsdeel]})
+
+        d3.csv('pie.csv', function(error, dataPie) {
+          if (error) throw error;
+
+          dataPie.forEach(function(d) {
+            console.log(d)
+            d[value.properties.Stadsdeel] = +d[value.properties.Stadsdeel]
+            d.Deel = d.Deel
+
+          })
+          svgPie.selectAll('.arc')
+            .remove()
+          pieTitle.selectAll('text')
+            .remove()
+
+            arcs = svgPie.selectAll('.arc')
+              .data(pie(dataPie))
+              .enter()
+              .append('g')
+              .attr('class', 'arc')
+
+            arcs.append('path')
+              .attr('d', path)
+              .attr('fill', function(d) {return colorPie(d.data.Deel)})
+              .transition()
+              .ease(d3.easeLinear)
+              .duration(1000)
+              .attrTween('d', pieTween)
+
+            arcs.append('text')
+              .transition()
+              .ease(d3.easeLinear)
+              .duration(1000)
+              .attr("transform", function(d) {return "translate(" + label.centroid(d) + ')'; })
+              .attr('dy', "0.35em")
+              .text(function(d) {return format(d.data[value.properties.Stadsdeel])})
+
+            pieTitle.append('text')
+               .attr('id', 'pieTitle')
+               .text(function(d) {return value.properties.Stadsdeel})
+               .attr('x', 180)
+               .attr('y', 50)
+
+        })
+        function pieTween(b) {
+          b.innerRadius = 0;
+          var i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
+          return function(t) {return path(i(t));}
+        }
+      }
 
     var stadsdelen = topojson.feature(data, data.objects.buurten).features;
 
@@ -30,10 +87,6 @@ window.onload = function() {
     info.forEach(function(d) {return bewDict[d.Stadsdeel] = d.Bewoners})
     info.forEach(function(d) {return verkochtDict[d.Stadsdeel] = +d.Verkocht})
 
-    console.log(bewDict)
-
-    console.log(stadsdelen)
-    console.log(info)
 
     // svg for map
     var svg = d3.select('#map')
@@ -66,10 +119,10 @@ window.onload = function() {
       })
       .on('mousemove', mousemove)
 
+
       function mouseover(d) {
         d3.select(this)
           .attr('opacity', 0.5)
-          console.log(d)
           if(d.properties.Stadsdeel == "Westpoort") {
             document.getElementById('tip').innerHTML = "<strong>Stadsdeel: </strong><span class='tiptext'>"
             + d.properties.Stadsdeel + "<br>Cijfers zijn onderverdeeld in de <br> stadsdelen West en Nieuw-West</span>"
@@ -90,8 +143,8 @@ window.onload = function() {
     '</span><br>' + "<strong>Aantal bewoners 1 januari 2018: </strong><span class='tiptext'>" + bewDict[d.properties.Stadsdeel] + "</span><br>" +
     "<strong>Aantal verkochte woningen Q1 2018*: </strong><span class='tiptext'>" + verkochtDict[d.properties.Stadsdeel] + "</span>"
 
-      var xPos = parseFloat(d3.event.pageX) - 120;
-      var yPos = parseFloat(d3.event.pageY) - 110;
+      var xPos = parseFloat(d3.event.pageX) - 150;
+      var yPos = parseFloat(d3.event.pageY) - 130;
       d3.select('#tip')
         .style('left', xPos + 'px')
         .style('top', yPos + 'px')
@@ -111,8 +164,8 @@ window.onload = function() {
           .style('top', yPos + 'px')
         d3.select('#tip').classed('hidden', false)
       } else {
-      var xPos = parseFloat(d3.event.pageX) - 120;
-      var yPos = parseFloat(d3.event.pageY) - 110;
+      var xPos = parseFloat(d3.event.pageX) - 150;
+      var yPos = parseFloat(d3.event.pageY) - 130;
       d3.select('#tip')
         .style('left', xPos + 'px')
         .style('top', yPos + 'px')
@@ -136,6 +189,7 @@ window.onload = function() {
 
     colorPie = d3.scaleOrdinal(['#98abc5', '#6b486b', '#a05d56'])
 
+
     var path = d3.arc()
       .outerRadius(radius - 10)
       .innerRadius(0);
@@ -144,9 +198,13 @@ window.onload = function() {
       .outerRadius(radius - 80)
       .innerRadius(radius - 60);
 
+
     var pie = d3.pie()
       .sort(null)
       .value(function(d) {return d.Amsterdam})
+
+    var pieTitle = d3.select('#pie').append('svg').append('g')
+
 
     d3.csv("pie.csv", function(error, dataPie) {
       if (error) throw error;
@@ -156,6 +214,12 @@ window.onload = function() {
       d.Deel = d.Deel
 
       })
+      function makePie() {
+      svgPie.selectAll('.arc')
+        .remove()
+
+      pieTitle.selectAll('text')
+        .remove()
 
       var arc = svgPie.selectAll('.arc')
         .data(pie(dataPie))
@@ -165,85 +229,59 @@ window.onload = function() {
       arc.append('path')
          .attr('d', path)
          .attr('fill', function(d) {return colorPie(d.data.Deel)})
+         .transition()
+         .ease(d3.easeLinear)
+         .duration(1000)
+         .attrTween('d', pieTween)
 
-      format = d3.format(',.1%')
       arc.append('text')
+         .transition()
+         .ease(d3.easeLinear)
+         .duration(1000)
          .attr("transform", function(d) {return "translate(" + label.centroid(d) + ')'; })
          .attr('dy', "0.35em")
          .text(function(d) {return format(d.data.Amsterdam)})
 
+      pieTitle.append('text')
+         .attr('id', 'pieTitle')
+         .text('Amsterdam')
+         .attr('x', 180)
+         .attr('y', 50)
 
 
-      var legendP = svgPie.select('.legend')
-        .data(pie(dataPie))
+      function pieTween(b) {
+        b.innerRadius = 0;
+        var i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
+        return function(t) {return path(i(t));}
+      }
+      }
+
+      var pieDiv = d3.select('#pie').append('svg').attr('class', 'legendSvp')
+      var legendP = pieDiv.selectAll('.legend')
+        .data(dataPie)
         .enter().append('g')
-        .attr('transform', function(d,i) {
-          return 'translate(' + (width - 110) + ',' + (i*15 + 20) + ')'})
         .attr('class', 'legend')
+        .attr('transform', function(d,i) {
+          return 'translate(0,' + (10 + i*20) + ')'})
 
       legendP.append('rect')
         .attr('width', 10)
         .attr('height', 10)
-        .attr('fill', function(d,i) {
+        .attr('fill', function(d, i) {
           return colorPie(i)
         })
 
       legendP.append('text')
-        .text(function(d) {console.log(d)
-        })
-      })
+        .attr("x", 20)
+        .attr("y", 10)
+        .text(function(d) {return d.Deel})
+        .attr("class", "textselected")
+        .style("text-anchor", "start")
+        .style("font-size", 15)
 
-
-
-      function change(value) {
-
-        var pie = d3.pie()
-          .sort(null)
-          .value(function(d) {return d[value.properties.Stadsdeel]})
-
-        d3.csv('pie.csv', function(error, dataPie) {
-          if (error) throw error;
-
-          dataPie.forEach(function(d) {
-            console.log(d)
-            d[value.properties.Stadsdeel] = +d[value.properties.Stadsdeel]
-            d.Deel = d.Deel
-
-            console.log(d[value.properties.Stadsdeel])
-            console.log(d.Deel)
-          })
-        svgPie.selectAll('.arc')
-          .remove()
-
-        arcs = svgPie.selectAll('.arc')
-             .data(pie(dataPie))
-             .enter()
-             .append('g')
-             .attr('class', 'arc')
-
-        arcs.append('path')
-             .attr('d', path)
-             .attr('fill', function(d) {return colorPie(d.data.Deel)})
-             .transition()
-             .ease(d3.easeLinear)
-             .duration(1000)
-             .attrTween('d', pieTween)
-
-        arcs.append('text')
-             .transition()
-             .ease(d3.easeLinear)
-             .duration(1000)
-             .attr("transform", function(d) {return "translate(" + label.centroid(d) + ')'; })
-             .attr('dy', "0.35em")
-             .text(function(d) {return format(d.data[value.properties.Stadsdeel])})
-        })
-        function pieTween(b) {
-          b.innerRadius = 0;
-          var i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
-          return function(t) {return path(i(t));}
-
-        }
-      }
-
+        makePie()
+        d3.selectAll('.stadsdelen')
+          .on('mouseleave', makePie)
+    })
   }
 }
